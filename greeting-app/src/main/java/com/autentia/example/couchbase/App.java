@@ -77,7 +77,6 @@ public class App {
                 f.write(jo.toString());                
                 //guardar en Couchbase
                 bucket.upsert(JsonDocument.create("g:hello"+i, jo));
-                
                 i++;
                 f.close();
         
