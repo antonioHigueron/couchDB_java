@@ -40,13 +40,50 @@ public class App {
         //crearBackup(bucket);
         //crearNewLocal(bucket);
         //definitivo(bucket);
-        actualizarCouch(bucket);
+        //actualizarCouch(bucket);
+        insertarListasObj(bucket);
 
         // crearIndiceBucket(bucket);
 
         // consultar(bucket);
 
         desconectar(cluster, bucket);
+    }
+
+    private static void insertarListasObj(Bucket bucket) throws IOException {
+ 
+        List<String> lista = new ArrayList<>();
+        // lista de nombres de documentos de couchbase
+        lista.add("g:hello");
+        lista.add("g:hello2");
+        int i = 0;
+        for (String e : lista) {
+            System.out.println("DOCUMENTO_NUEVO: " + bucket.get(e).content());
+            FileWriter f;         
+            JsonArray ja = JsonArray.empty();
+            JsonObject jon = JsonObject.create().put("atriLista_1","valLista_1");
+            ja.add(jon);
+           Map<String,Object> submapa = new HashMap<String,Object>();
+           submapa.put("sub1", "subvalue1");
+           Map<String, Object> mapa = new HashMap<String, Object>();
+           mapa.put("key_1", "value_1");
+           mapa.put("key_2", "value_2");
+           mapa.put("SubKEY",submapa);              
+                f = new FileWriter("D:\\PROYECTOS\\couchbase\\couchDB_java\\greeting-app\\src\\main\\java\\com\\autentia\\example\\couchbase\\insertarListasObj_" + i+".json");
+                JsonObject jo = bucket.get(e).content();
+                jo
+                .put("lista1", ja)
+                .put("atributo_1", "clave_1")
+                .put("atributo_2","clave_2")
+                .put("objeto",JsonObject.from(mapa));            
+                //guardar en Local
+                f.write(jo.toString());                
+                //guardar en Couchbase
+                //bucket.upsert(JsonDocument.create("g:hello"+i, jo));
+                i++;
+                f.close();
+        
+        }
     }
 
     private static void actualizarCouch(Bucket bucket) throws IOException {

@@ -1,0 +1,18 @@
+{
+    "objeto": {
+        "key_2": "value_2",
+        "key_1": "value_1",
+        "SubKEY": {
+            "sub1": "subvalue1"
+        }
+    },
+    "message": "Hello World!",
+    "author": "foo",
+    "atributo_1": "clave_1",
+    "lista1": [
+        {
+            "atriLista_1": "valLista_1"
+        }
+    ],
+    "atributo_2": "clave_2"
+}
