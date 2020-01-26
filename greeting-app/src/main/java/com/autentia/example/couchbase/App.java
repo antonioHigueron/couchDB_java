@@ -3,7 +3,9 @@ package com.autentia.example.couchbase;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -34,13 +36,50 @@ public class App {
         // JsonObject hello = crearObjetoInsertarEnBucket();
         // insertarObjetoBucket(bucket, hello);
 
-        crearBackup(bucket);
+        //crearBackup(bucket);
+        //crearNewLocal(bucket);
+        definitivo(bucket);
 
         // crearIndiceBucket(bucket);
 
         // consultar(bucket);
 
         desconectar(cluster, bucket);
+    }
+
+    private static void definitivo(Bucket bucket) throws IOException {
+        // imprime el contenido del documento completo, si existe dentro de ese bucket
+        // System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2").content());
+        // String v = "TER";
+        // System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2").content());
+        List<String> lista = new ArrayList<>();
+        lista.add("g:hello");
+        lista.add("g:hello2");
+        int i = 0;
+        for (String e : lista) {
+            System.out.println("DOCUMENTO_NUEVO: " + bucket.get(e).content());
+            FileWriter f;
+
+           Map<String,Object> submapa = new HashMap<String,Object>();
+           submapa.put("sub1", "subvalue1");
+           Map<String, Object> mapa = new HashMap<String, Object>();
+           mapa.put("key_1", "value_1");
+           mapa.put("key_2", "value_2");
+           mapa.put("SubKEY",submapa);
+              //  f = new FileWriter("backup_" + i);
+                f = new FileWriter("D:\\PROYECTOS\\couchbase\\couchDB_java\\greeting-app\\src\\main\\java\\com\\autentia\\example\\couchbase\\update_" + i+".json");
+                JsonObject contenido = JsonObject.empty()
+                .put("atributo_1", "clave_1")
+                .put("atributo_2","clave_2")
+                .put("objeto",JsonObject.from(mapa));
+                f.write(contenido.toString());
+                bucket.upsert(JsonDocument.create("g:hello"+i, contenido));
+                //f.write(bucket.get(e).content().toString());
+         
+                i++;
+                f.close();
+        
+        }
     }
 
     private static void crearBackup(Bucket bucket) throws IOException {
@@ -64,6 +103,40 @@ public class App {
         
         }
     }
+    private static void crearNewLocal(Bucket bucket) throws IOException {
+        // imprime el contenido del documento completo, si existe dentro de ese bucket
+        // System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2").content());
+        // String v = "TER";
+        // System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2").content());
+        List<String> lista = new ArrayList<>();
+        lista.add("g:hello");
+        lista.add("g:hello2");
+        int i = 0;
+        for (String e : lista) {
+            System.out.println("DOCUMENTO_NUEVO: " + bucket.get(e).content());
+            FileWriter f;
+
+           Map<String,Object> submapa = new HashMap<String,Object>();
+           submapa.put("sub1", "subvalue1");
+           Map<String, Object> mapa = new HashMap<String, Object>();
+           mapa.put("key_1", "value_1");
+           mapa.put("key_2", "value_2");
+           mapa.put("SubKEY",submapa);
+              //  f = new FileWriter("backup_" + i);
+                f = new FileWriter("D:\\PROYECTOS\\couchbase\\couchDB_java\\greeting-app\\src\\main\\java\\com\\autentia\\example\\couchbase\\update_" + i+".json");
+                JsonObject contenido = JsonObject.empty()
+                .put("atributo_1", "clave_1")
+                .put("atributo_2","clave_2")
+                .put("objeto",JsonObject.from(mapa));
+                f.write(contenido.toString());
+                bucket.upsert(JsonDocument.create("g:hello"+i, contenido));
+                //f.write(bucket.get(e).content().toString());
+         
+                i++;
+                f.close();
+        
+        }
+    }
 
     /**
      * Si existe el documento, lo machaca, sino lo crea
@@ -78,7 +151,7 @@ public class App {
 
     private static JsonObject crearObjetoInsertarEnBucket() {
         // creamos una estructura de tipo json, que es lo que almacena couch
-        final JsonObject hello = JsonObject.create().put("parámetro_1", "Hola Java!").put("mi nombre", "antonio");
+        final JsonObject hello = JsonObject.create().put("Cuerpo_1", "sera lista_X").put("cuerpo_2", "antonio");
         return hello;
     }
 
