@@ -71,8 +71,7 @@ public class App {
                 jo
                 .put("atributo_1", "clave_1")
                 .put("atributo_2","clave_2")
-                .put("objeto",JsonObject.from(mapa))
-                ;            
+                .put("objeto",JsonObject.from(mapa));            
                 //guardar en Local
                 f.write(jo.toString());                
                 //guardar en Couchbase
