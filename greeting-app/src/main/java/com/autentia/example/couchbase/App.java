@@ -22,14 +22,74 @@ import com.couchbase.client.java.query.N1qlQueryRow;
 public class App {
     public static void main(String[] args) {
         System.out.println("Comenzamos");
-        Properties systemProperties = System.getProperties();
-        //añadimos a las propiedades del sistema los paquetes que van a soltar log
-        systemProperties.put("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger");
-        System.setProperties(systemProperties);
-        //creamos una instancia del paquete que va a crear los log
-        Logger logger = Logger.getLogger("com.couchbase.client");
-        // configuramos para que esos log no se muestren por consola
-        logger.setLevel(java.util.logging.Level.OFF);
+        
+        crearLog();
+        Cluster cluster = conexion();
+        
+        Bucket bucket = conectarABucket(cluster);
+        
+        JsonObject hello = crearObjetoInsertarEnBucket();
+        insertarObjetoBucket(bucket, hello);
+        
+        obtenerDocumento(bucket);
+        
+        crearIndiceBucket(bucket);
+        
+        consultar(bucket);
+
+        desconectar(cluster, bucket);
+    }
+
+    private static void obtenerDocumento(Bucket bucket) {
+        //imprime el contenido del documento completo, si existe dentro de ese bucket
+        System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2"));
+    }
+
+    /**
+     * Si existe el documento, lo machaca, sino lo crea
+     * @param bucket
+     * @param hello
+     */
+    private static void insertarObjetoBucket(Bucket bucket, JsonObject hello) {
+        //bucket.upsert(JsonDocument.create("g:hello2", hello));
+        bucket.upsert(JsonDocument.create("g:hello2", hello));
+    }
+
+    private static JsonObject crearObjetoInsertarEnBucket() {
+        // creamos una estructura de tipo json, que es lo que almacena couch
+        JsonObject hello = JsonObject.create().put("parámetro_1", "Hola Java!").put("mi nombre", "antonio");
+        return hello;
+    }
+
+    private static Bucket conectarABucket(Cluster cluster) {
+        // schema en el que hacer los cambios
+        Bucket bucket = cluster.openBucket("greeting");
+        return bucket;
+    }
+
+    private static void crearIndiceBucket(Bucket bucket) {
+        //obtenemos permisos en el bucket, para crear en este caso un índice
+        bucket.bucketManager().createN1qlPrimaryIndex(true, false);
+    }
+
+    private static void consultar(Bucket bucket) {
+        //consulta para buscar los documentos en el bucket `greeting`, donde la key:  autor = foo
+        N1qlQueryResult result = bucket
+                //.query(N1qlQuery.parameterized("SELECT message FROM `greeting` WHERE author=$1", JsonArray.from("foo")));
+                .query(N1qlQuery.parameterized("SELECT meta.id FROM `greeting` WHERE author=$1", JsonArray.from("foo")));
+        for (N1qlQueryRow row : result) {
+            System.out.println("FILA: "+row);
+        }
+    }
+
+    private static void desconectar(Cluster cluster, Bucket bucket) {
+        //desconectamos del bucket `greeting` primero
+        bucket.close();
+        //desconectamos del cluster, conexión principal.
+        cluster.disconnect();
+    }
+
+    private static Cluster conexion() {
         //this tunes the SDK (to customize connection timeout)
         //aumentamos el tiempo para conectar, por defecto 5 segundos, no me da tiempo y me echa
         CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder()
@@ -39,27 +99,19 @@ public class App {
         Cluster cluster = CouchbaseCluster.create(env,"172.18.247.226:8091");
         // login de usuario de acceso
         cluster.authenticate("Administrator", "123456");
-        // schema en el que hacer los cambios
-        Bucket bucket = cluster.openBucket("greeting");
-        // creamos una estructura de tipo json, que es lo que almacena couch
-        JsonObject hello = JsonObject.create().put("parámetro_1", "Hola Java!").put("mi nombre", "antonio");
-        //bucket.upsert(JsonDocument.create("g:hello2", hello));
-        bucket.upsert(JsonDocument.create("g:hello2", hello));
-        //imprime el contenido del documento completo, si existe dentro de ese bucket
-        System.out.println("DOCUMENTO_NUEVO: "+bucket.get("g:hello2"));
-        //obtenemos permisos en el bucket, para crear en este caso un índice
-        bucket.bucketManager().createN1qlPrimaryIndex(true, false);
-        //consulta para buscar los documentos en el bucket `greeting`, donde la key:  autor = foo
-        N1qlQueryResult result = bucket
-                //.query(N1qlQuery.parameterized("SELECT message FROM `greeting` WHERE author=$1", JsonArray.from("foo")));
-                .query(N1qlQuery.parameterized("SELECT meta.id FROM `greeting` WHERE author=$1", JsonArray.from("foo")));
-
-        for (N1qlQueryRow row : result) {
-            System.out.println("FILA: "+row);
-        }
-        //desconectamos del bucket `greeting` primero
-        bucket.close();
-        //desconectamos del cluster, conexión principal.
-        cluster.disconnect();
+        return cluster;
     }
+
+    private static void crearLog() {
+        Properties systemProperties = System.getProperties();
+        //añadimos a las propiedades del sistema los paquetes que van a soltar log
+        systemProperties.put("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger");
+        System.setProperties(systemProperties);
+        //creamos una instancia del paquete que va a crear los log
+        Logger logger = Logger.getLogger("com.couchbase.client");
+        // configuramos para que esos log no se muestren por consola
+        logger.setLevel(java.util.logging.Level.OFF);
+    }
+
+
 }
